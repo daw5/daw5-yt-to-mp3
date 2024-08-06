@@ -1,0 +1,17 @@
+{
+  "name": "daw5yt-to-mp3-api",
+  "version": "1.0.0",
+  "description": "A simple api which receives youtube urls and converts them to mp3s",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "daw5",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "yt-converter": "^2.1.1"
+  }
+}
