@@ -4,21 +4,41 @@ import "dotenv/config";
 
 const app = express();
 const port = 3000;
+const directory = process.env.DIRECTORY;
+const regex =
+  /(youtu.*be.*)\/(watch\?v=|embed\/|v|shorts|)(.*?((?=[&#?])|$))/gm;
+
+const urlQueue = [];
+
+let downloading = false;
 
 app.get("/download", (req, res) => {
-  console.log("hey we console loggin hiya: ", req.query.url);
-  res.send("Hello World!");
-  downloadMp3(req.query.url);
+  urlQueue.push(req.query.url);
+  if (downloading === false) downloadMp3(res);
 });
 
-async function downloadMp3(url) {
-  const data = await Audio({
+async function downloadMp3(res) {
+  downloading = true;
+  const url = urlQueue.shift();
+  if (!url.match(regex)) {
+    return;
+  }
+
+  await Audio({
     url,
-    directory: process.env.DIRECTORY,
+    directory,
     ffmpegPath: process.env.FFPMEGPATH,
   });
 
-  console.log(data.message);
+  if (urlQueue.length > 0) {
+    downloadMp3(res);
+  } else {
+    // we are sending the response too late for large downloads or groups of downloads, likely timing out on the chrome extension.
+    // we are going to need to poll...use a setTimeout on the chrome extension to hit an endpoint here every 10 seconds until complete message is received
+    res.send(`Downloaded mp3 to: ${directory}`);
+    console.log("downloads have completed: ", url);
+    downloading = false;
+  }
 }
 
 app.listen(port, () => {
