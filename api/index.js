@@ -17,6 +17,10 @@ app.get("/download", (req, res) => {
   if (downloading === false) downloadMp3(res);
 });
 
+app.get("/get-download-status", (req, res) => {
+  if (urlQueue.length === 0) res.send({ downloadComplete: true });
+});
+
 async function downloadMp3(res) {
   downloading = true;
   const url = urlQueue.shift();
@@ -35,8 +39,8 @@ async function downloadMp3(res) {
   } else {
     // we are sending the response too late for large downloads or groups of downloads, likely timing out on the chrome extension.
     // we are going to need to poll...use a setTimeout on the chrome extension to hit an endpoint here every 10 seconds until complete message is received
-    res.send(`Downloaded mp3 to: ${directory}`);
-    console.log("downloads have completed: ", url);
+    // res.send(`Downloaded mp3 to: ${directory}`);
+    // console.log("downloads have completed: ", url);
     downloading = false;
   }
 }
