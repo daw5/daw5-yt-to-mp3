@@ -12,66 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// use this to set custom shit later
-// chrome.runtime.onInstalled.addListener(() => {
-// chrome.action.setBadgeText({
-//   text: 'OFF'
-// });
-// });
-// let downloading = false;
-// When the user clicks on the extension action
 chrome.action.onClicked.addListener(async (tab) => {
-  // if (downloading) return;
-  // downloading = true;
-  chrome.action.setBadgeText({
-    text: "DL",
-  });
-  fetch(`http://localhost:3000/download?url=` + tab.url, { mode: "no-cors" }) // 'data/data.json' in my case
-    .then(function (response) {
-      // downloading = false;
-      chrome.action.setBadgeText({
-        text: "RD",
-      });
-
-      if (response.status !== 200) {
-        console.log(
-          "Looks like there was a problem. Status Code: " + response.status
-        );
-        return;
-      }
-
-      // Examine the text in the response
-      response.json().then(function (data) {
-        console.log(data);
-      });
+  setChromeBadgeText("DL");
+  fetch(`http://localhost:3000/download?url=` + tab.url)
+    .then(() => {
+      pollServerForDownloadStatus(tab.url);
     })
-    .catch(function (err) {
-      console.log("Fetch Error :-S", err);
+    .catch((err) => {
+      console.log("Fetch Error x.x", err);
     });
-  // if (tab.url.startsWith(extensions) || tab.url.startsWith(webstore)) {
-  //   // We retrieve the action badge to check if the extension is 'ON' or 'OFF'
-  //   const prevState = await chrome.action.getBadgeText({ tabId: tab.id });
-  //   // Next state will always be the opposite
-  //   const nextState = prevState === 'ON' ? 'OFF' : 'ON';
-
-  //   // Set the action badge to the next state
-  //   await chrome.action.setBadgeText({
-  //     tabId: tab.id,
-  //     text: nextState
-  //   });
-
-  //   if (nextState === 'ON') {
-  //     // Insert the CSS file when the user turns the extension on
-  //     await chrome.scripting.insertCSS({
-  //       files: ['focus-mode.css'],
-  //       target: { tabId: tab.id }
-  //     });
-  //   } else if (nextState === 'OFF') {
-  //     // Remove the CSS file when the user turns the extension off
-  //     await chrome.scripting.removeCSS({
-  //       files: ['focus-mode.css'],
-  //       target: { tabId: tab.id }
-  //     });
-  //   }
-  // }
 });
+
+function pollServerForDownloadStatus(url) {
+  const pollingInterval = setInterval(() => {
+    fetch(`http://localhost:3000/get-download-status`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.downloadCompleted) {
+          clearInterval(pollingInterval);
+          setChromeBadgeText("FN");
+        }
+      });
+  }, 5000);
+}
+
+function setChromeBadgeText(text) {
+  chrome.action.setBadgeText({
+    text,
+  });
+}
