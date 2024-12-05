@@ -13,9 +13,9 @@
 // limitations under the License.
 
 chrome.action.onClicked.addListener(async (tab) => {
-  setChromeBadgeText("DL");
   fetch(`http://localhost:3000/download?url=` + tab.url)
     .then(() => {
+      setChromeBadgeText("DL");
       pollServerForDownloadStatus(tab.url);
     })
     .catch((err) => {
@@ -30,7 +30,7 @@ function pollServerForDownloadStatus(url) {
       .then((data) => {
         if (data.downloadCompleted) {
           clearInterval(pollingInterval);
-          setChromeBadgeText("FN");
+          setChromeBadgeText("");
         }
       });
   }, 5000);
