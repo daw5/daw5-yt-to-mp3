@@ -28,6 +28,7 @@ function pollServerForDownloadStatus(url) {
     fetch(`http://localhost:3000/get-download-status`)
       .then((response) => response.json())
       .then((data) => {
+        console.log("is download completed: ", data.downloadCompleted, url);
         if (data.downloadCompleted) {
           clearInterval(pollingInterval);
           setChromeBadgeText("");

@@ -30,7 +30,7 @@ app.get("/download", (req, res) => {
 
 app.get("/get-download-status", (req, res) => {
   console.log("we are being polled: ", urlQueue, downloading);
-  if (urlQueue.length === 0) {
+  if (urlQueue.length === 0 && !downloading) {
     console.log("All downloads have completed --");
     res.send({ downloadCompleted: true });
   } else res.send({ downloadCompleted: false });
