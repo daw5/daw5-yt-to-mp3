@@ -47,8 +47,6 @@ async function downloadMp3() {
     ffmpegPath: process.env.FFPMEGPATH,
   });
 
-  // looks like the logic is sound, but with larger files, sometimes this thing errors out...error must be coming from within the lib, because the promise from the call to Audio() never returns!
-
   console.log(downloadInfo);
 
   if (urlQueue.length > 0) {
