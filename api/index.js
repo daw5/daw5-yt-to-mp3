@@ -1,4 +1,4 @@
-import { Audio } from "yt-converter";
+import { Audio } from "daw5-yt-converter";
 import express from "express";
 import "dotenv/config";
 import cors from "cors";
@@ -15,9 +15,12 @@ const regex =
 const urlQueue = [];
 
 let downloading = false;
+let consoleAnimationInterval;
 
 app.get("/download", (req, res) => {
-  console.log("request recieved, let's download a url!!!!!!!!!");
+  if (consoleAnimationInterval) clearInterval(consoleAnimationInterval);
+  console.log("request recieved");
+
   if (!req.query.url.match(regex)) {
     res.send(true);
     return;
@@ -25,33 +28,35 @@ app.get("/download", (req, res) => {
 
   urlQueue.push(req.query.url);
   res.send(true);
+
   if (downloading === false) downloadMp3();
 });
 
-app.get("/get-download-status", (req, res) => {
-  console.log("we are being polled: ", urlQueue, downloading);
-  if (urlQueue.length === 0 && !downloading) {
-    console.log("All downloads have completed --");
-    res.send({ downloadCompleted: true });
-  } else res.send({ downloadCompleted: false });
-});
-
 async function downloadMp3() {
+  console.log(
+    `Url is valid, downloading ${urlQueue[0]} now. Queue position: ${urlQueue.length}`
+  );
+
   const url = urlQueue.shift();
   downloading = true;
-  console.log("before await audio: ", urlQueue, url);
 
-  const downloadInfo = await Audio({
-    url,
-    directory,
-    ffmpegPath: process.env.FFPMEGPATH,
-  });
+  try {
+    const downloadInfo = await Audio({
+      url,
+      directory,
+      ffmpegPath: process.env.FFPMEGPATH,
+      onDownloading: (d) => console.log(d),
+    });
 
-  console.log(downloadInfo);
+    console.log("Download Successful: ", downloadInfo?.message);
+  } catch (error) {
+    console.log("error: ", error);
+  }
 
   if (urlQueue.length > 0) {
     downloadMp3();
   } else {
+    consoleAnimationInterval = consoleAnimation();
     downloading = false;
   }
 }
@@ -59,3 +64,13 @@ async function downloadMp3() {
 app.listen(port, () => {
   console.log(`Daw5 yt-to-mp3 listening on port ${port}`);
 });
+
+function consoleAnimation() {
+  let P = ["\\", "|", "/", "-"];
+  let x = 0;
+  console.log("Awaiting new download requests...");
+  return setInterval(function () {
+    process.stdout.write("\r" + P[x++]);
+    x &= 3;
+  }, 250);
+}

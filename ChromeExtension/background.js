@@ -15,27 +15,16 @@
 chrome.action.onClicked.addListener(async (tab) => {
   fetch(`http://localhost:3000/download?url=` + tab.url)
     .then(() => {
-      setChromeBadgeText("DL");
+      setChromeBadgeText("YUP");
+      setTimeout(() => {
+        setChromeBadgeText("");
+      }, 1000);
       pollServerForDownloadStatus(tab.url);
     })
     .catch((err) => {
       console.log("Fetch Error x.x", err);
     });
 });
-
-function pollServerForDownloadStatus(url) {
-  const pollingInterval = setInterval(() => {
-    fetch(`http://localhost:3000/get-download-status`)
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("is download completed: ", data.downloadCompleted, url);
-        if (data.downloadCompleted) {
-          clearInterval(pollingInterval);
-          setChromeBadgeText("");
-        }
-      });
-  }, 5000);
-}
 
 function setChromeBadgeText(text) {
   chrome.action.setBadgeText({
