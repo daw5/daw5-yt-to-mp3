@@ -1,7 +1,7 @@
-import { Audio } from "daw5-yt-converter";
 import express from "express";
 import "dotenv/config";
 import cors from "cors";
+import youtubeDl from "youtube-dl-exec";
 
 const app = express();
 const port = 3000;
@@ -34,21 +34,22 @@ app.get("/download", (req, res) => {
 
 async function downloadMp3() {
   console.log(
-    `Url is valid, downloading ${urlQueue[0]} now. Queue position: ${urlQueue.length}`
+    `Url is valid, downloading ${urlQueue[0]} now. Queue position: ${urlQueue.length}`,
   );
 
   const url = urlQueue.shift();
   downloading = true;
 
   try {
-    const downloadInfo = await Audio({
-      url,
-      directory,
-      ffmpegPath: process.env.FFPMEGPATH,
-      onDownloading: (d) => console.log(d),
+    const downloadInfo = await youtubeDl(url, {
+      noCheckCertificates: true,
+      extractAudio: true,
+      audioFormat: "mp3",
+      audioQuality: 0,
+      paths: directory,
     });
 
-    console.log("Download Successful: ", downloadInfo?.message);
+    console.log("Download Successful: ", downloadInfo);
   } catch (error) {
     console.log("error: ", error);
   }
